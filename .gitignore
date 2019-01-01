@@ -1,3 +1,6 @@
+# Ignore all the secrets (authentication stuff, etc)
+secrets.h
+
 # Logs
 logs
 *.log
