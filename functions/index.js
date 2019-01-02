@@ -34,3 +34,18 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
         return sendResponse(response, 500, "Sorry, something broke.")
     });
 });
+
+exports.tripAlarm = functions.https.onRequest((request, response) => {
+    authenticate(admin, request).then((authResult) => {
+        if (!authResult.result) {
+            return sendResponse(response, 403, "Unauthorized, my dude!");
+        }
+        let tripTime = new Date().toISOString();
+        return admin.firestore().collection('trips').add({time: tripTime}).then(writeResult => {
+            return sendResponse(response, 200, "Alarm trip has been recorded.");
+        });
+    }).catch(err=>{
+        console.log(err);
+        return sendResponse(response, 500, "Sorry, something broke.")
+    });
+});

@@ -10,7 +10,10 @@ let requests = {
             'X-Client-ID': auth.user,
             'Authorization': authorization
             }
-        }).catch(err=>err.response);
+        }).catch(err=>{
+            console.log(err);
+            return err.response;
+        });
     }
 }
 

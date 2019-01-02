@@ -9,9 +9,16 @@ Pin definitions
 */
 
 const int LED_PIN = 2;
-const int MOTION_PIN = 21;
+const int MOTION_PIN = 26;
 const int BUTTON_PIN = 17;
 const int ALARM_PIN = 16;
+
+/*
+Motion sensor:
+white : ground
+red   : 5V
+black : GPIO11
+*/
 
 /*
 
@@ -40,6 +47,15 @@ Functions for main program!
 
 */
 
+void blinkLight(int times) {
+  for (int i = 0; i < times; ++i) {
+    digitalWrite(LED_PIN, 1);
+    delay(250);
+    digitalWrite(LED_PIN, 0);
+    delay(250);
+  }
+}
+
 bool connectToNetwork() {
   Serial.println("Connecting to network...");
   WiFi.begin(ssid, password);
@@ -50,13 +66,27 @@ bool connectToNetwork() {
   return WiFi.status() == WL_CONNECTED;
 }
 
-void blinkLight(int times) {
-  for (int i = 0; i < times; ++i) {
-    digitalWrite(LED_PIN, 1);
-    delay(250);
-    digitalWrite(LED_PIN, 0);
-    delay(250);
+void getSite(const char* site) { 
+  if ((WiFi.status() != WL_CONNECTED)) {
+    return;
   }
+  Serial.println(site);
+  HTTPClient http;
+  if (root_ca != "") {
+    http.begin(site, root_ca);
+  } else {
+    http.begin(site);
+  }
+  int httpCode = http.GET();
+  if (httpCode > 0) { //Check for the returning code
+    String payload = http.getString();
+    Serial.println(httpCode);
+    Serial.println(payload);
+  }else {
+    Serial.println("Error on HTTP request");
+  }
+  http.end();
+  // delay(10000);
 }
 
 void setup() {
@@ -77,6 +107,7 @@ void setup() {
 // Trip the alarm
 void soundAlarm(bool isTripped) {
   if (isTripped) {
+    getSite("https://us-central1-discolemur-info.cloudfunctions.net/tripAlarm");
     digitalWrite(LED_PIN, 1);
     digitalWrite(ALARM_PIN, 1);
   }
@@ -124,32 +155,8 @@ void runMotionAlarm() {
   }
 }
 
-void getSite(const char* site) { 
-  if ((WiFi.status() != WL_CONNECTED)) {
-    return;
-  }
-  Serial.println(site);
-  HTTPClient http;
-  if (root_ca != "") {
-    http.begin(site, root_ca);
-  } else {
-    http.begin(site);
-  }
-  int httpCode = http.GET();
-  if (httpCode > 0) { //Check for the returning code
-    String payload = http.getString();
-    Serial.println(httpCode);
-    Serial.println(payload);
-  }else {
-    Serial.println("Error on HTTP request");
-  }
-  http.end();
-  delay(10000);
-}
-
 // Main loop
 void loop() {
-  // runMotionAlarm();
-  getSite("http://www.discolemur.info/index.html");
+  runMotionAlarm();
   delay(50);
 }

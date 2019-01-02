@@ -3,7 +3,7 @@
 let assert = require('assert');
 // let {google} = require('googleapis');
 let requests = require('./requests.js');
-let key = require('./secrets.json');
+let key = require('./secrets.js');
 
 /**
  * This file tests deployed functions. I haven't yet figured out how to test locally...
@@ -45,12 +45,16 @@ describe("Testing all functions", () => {
                 return true;
             });
         });
-        it("should accept a properly authorized user", () => {
+        it.only("should accept a properly authorized user", () => {
             return getAccessToken()
                 .then(authToken => requests.HelloWorld({token: authToken, user: key.firebase_username}))
                 .then(response => {
-                    assert.equal(response.statusCode, 200);
-                    assert.equal(response.body, "Hello from Firebase!");
+                    if (response.statusCode) {
+                        assert.equal(response.statusCode, 200);
+                        assert.equal(response.body, "Hello from Firebase!");
+                    } else {
+                        assert.equal(response, "Hello from Firebase!");
+                    }
                     return true;
                 });
         });
