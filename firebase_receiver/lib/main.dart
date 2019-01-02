@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-  void firebaseCloudMessaging_Listeners() {
+  void firebaseCloudMessagingListeners() {
     print("Trying to initialize firebase listeners.");
 
     this._firebaseMessaging.getToken().then((token){
@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _incrementCounter() {
-    this.firebaseCloudMessaging_Listeners();
+    this.firebaseCloudMessagingListeners();
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below

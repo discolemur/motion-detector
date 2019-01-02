@@ -12,13 +12,7 @@ const int LED_PIN = 2;
 const int MOTION_PIN = 26;
 const int BUTTON_PIN = 17;
 const int ALARM_PIN = 16;
-
-/*
-Motion sensor:
-white : ground
-red   : 5V
-black : GPIO11
-*/
+const int BUTTON_LED_PIN = 21;
 
 /*
 
@@ -41,24 +35,39 @@ Variables related to alarm tripping.
 int motionTimes[NUM_MOTIONS_TO_TRIP];
 int motionIndex = 0;
 
+/* Button LED state */
+int blState = 0;
+/* Number of loops to keep button LED state */
+int blRatio = 3;
+/* Loop counter */
+int loopCounter = 0;
+
 /*
 
 Functions for main program!
 
 */
 
+// Writes value to both LEDs: LED_PIN and BUTTON_LED_PIN.
+void writeLED(int val) {
+  digitalWrite(LED_PIN, val);
+  digitalWrite(BUTTON_LED_PIN, val);
+}
+
 void blinkLight(int times) {
   for (int i = 0; i < times; ++i) {
-    digitalWrite(LED_PIN, 1);
+    writeLED(0);
     delay(250);
-    digitalWrite(LED_PIN, 0);
+    writeLED(1);
     delay(250);
   }
+  writeLED(0);
 }
 
 bool connectToNetwork() {
   Serial.println("Connecting to network...");
-  WiFi.begin(ssid, password);
+  // NOTE: ssid and password must be set properly when moved location.
+  WiFi.begin(ssid_house_home, password_house_home);
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Still trying to connect to wifi...");
@@ -94,13 +103,14 @@ void setup() {
   pinMode(MOTION_PIN, INPUT_PULLUP);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_LED_PIN, OUTPUT);
   pinMode(ALARM_PIN, OUTPUT);
   if (connectToNetwork()) {
     Serial.println("Connection successful!");
     blinkLight(4);
   } else {
     Serial.println("Connection failed!");
-    digitalWrite(LED_PIN, 1);
+    writeLED(1);
   }
 }
 
@@ -108,17 +118,20 @@ void setup() {
 void soundAlarm(bool isTripped) {
   if (isTripped) {
     getSite("https://us-central1-discolemur-info.cloudfunctions.net/tripAlarm");
-    digitalWrite(LED_PIN, 1);
+    writeLED(1);
     digitalWrite(ALARM_PIN, 1);
   }
 }
 
 // Reset the trip
 void resetAlarm() {
-  digitalWrite(LED_PIN, 0);
   digitalWrite(ALARM_PIN, 0);
+  blinkLight(2);
   motionIndex = 0;
+  writeLED(1);
   delay(1000 * SEC_TO_RESET);
+  loopCounter = 0;
+  blState = 1;
 }
 
 // Handle a new motion event
@@ -143,6 +156,11 @@ bool handleMotion() {
 }
 
 void runMotionAlarm() {
+  // Change LED state when hasn't tripped and blRatio loops have passed.
+  if (loopCounter % blRatio == 0 && motionIndex < NUM_MOTIONS_TO_TRIP) {
+    blState = (blState + 1) % 2;
+    writeLED(blState);
+  }
   int resetPressed = !digitalRead(BUTTON_PIN);
   int motionDetected = !digitalRead(MOTION_PIN);
   // Handle motion only when it hasn't been tripped.
@@ -153,6 +171,7 @@ void runMotionAlarm() {
   if (resetPressed) {
     resetAlarm();
   }
+  loopCounter++;
 }
 
 // Main loop
