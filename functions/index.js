@@ -8,7 +8,7 @@ const authenticate = require('./authenticate.js');
 
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
-admin.initializeApp();
+admin.initializeApp(functions.config().firebase);
 
 /**
  * Uses response object to send a response. I made this a separate function so that I can control its features later, particularly for testing purposes.
@@ -17,7 +17,7 @@ admin.initializeApp();
  * @param {*} message This is the body of the response.
  */
 function sendResponse(response, code, message) {
-    response.status(code).send(message);
+    return Promise.resolve().then(()=>response.status(code).send(message));
 }
 
 // // Create and Deploy Your First Cloud Functions
@@ -32,5 +32,5 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
     }).catch(err=>{
         console.log(err);
         return sendResponse(response, 500, "Sorry, something broke.")
-    })
+    });
 });

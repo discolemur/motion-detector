@@ -15,6 +15,9 @@
     "firebase-functions": "^2.1.0"
   },
   "devDependencies": {
+    "googleapis": "^36.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
     "chai": "^4.2.0",
     "eslint": "^4.12.0",
     "eslint-plugin-promise": "^3.6.0",
