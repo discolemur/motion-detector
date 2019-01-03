@@ -38,7 +38,7 @@ int motionIndex = 0;
 /* Button LED state */
 int blState = 0;
 /* Number of loops to keep button LED state */
-int blRatio = 3;
+int blRatio = 5;
 /* Loop counter */
 int loopCounter = 0;
 
@@ -129,9 +129,9 @@ void resetAlarm() {
   blinkLight(2);
   motionIndex = 0;
   writeLED(1);
-  delay(1000 * SEC_TO_RESET);
   loopCounter = 0;
   blState = 1;
+  delay(1000 * SEC_TO_RESET);
 }
 
 // Handle a new motion event

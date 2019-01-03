@@ -35,15 +35,34 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
     });
 });
 
+function handleTrip() {
+  const tripTime = new Date().toISOString();
+  const payload = {
+      notification: {
+          title: 'Alarm has been tripped!',
+          body: `${tripTime}`
+      }
+  };
+  return admin.messaging().sendToTopic("trips", payload)
+    .then((response) => {
+        console.log('Notification sent:',response);
+        return true;
+    }).catch((error) => {
+        console.log('Notification failed:', error);
+    }).then(() => admin.firestore().collection('trips').add({time: tripTime}))
+    
+}
+
 exports.tripAlarm = functions.https.onRequest((request, response) => {
     authenticate(admin, request).then((authResult) => {
         if (!authResult.result) {
             return sendResponse(response, 403, "Unauthorized, my dude!");
         }
-        let tripTime = new Date().toISOString();
-        return admin.firestore().collection('trips').add({time: tripTime}).then(writeResult => {
-            return sendResponse(response, 200, "Alarm trip has been recorded.");
-        });
+        else {
+            return handleTrip().then(writeResult => {
+                return sendResponse(response, 200, "Alarm trip has been recorded.");
+            })
+        }
     }).catch(err=>{
         console.log(err);
         return sendResponse(response, 500, "Sorry, something broke.")

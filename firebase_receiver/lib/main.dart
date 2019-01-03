@@ -51,7 +51,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void firebaseCloudMessagingListeners() {
     print("Trying to initialize firebase listeners.");
-
     this._firebaseMessaging.getToken().then((token){
       print(token);
     });
@@ -67,6 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
         print('on launch $message');
       }
     );
+
+    this._firebaseMessaging.subscribeToTopic("trips");
   }
 
   void _incrementCounter() {
