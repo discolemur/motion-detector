@@ -36,7 +36,7 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
 });
 
 function handleTrip() {
-  const tripTime = new Date().toISOString();
+  const tripTime = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' });
   const payload = {
       notification: {
           title: 'Alarm has been tripped!',
